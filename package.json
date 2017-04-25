@@ -1,0 +1,18 @@
+{
+  "name": "md2anki",
+  "version": "1.0.0",
+  "description": "Convert Markdown files to sets of Anki flashcards.",
+  "bin": {
+    "md2anki": "./src/index.js"
+  },
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joshua Gross <joshua.gross@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "anki-apkg-export": "^3.0.1",
+    "markdown": "^0.5.0"
+  }
+}
