@@ -58,7 +58,6 @@ var deck = new AnkiExport(title);
       var cardFront = parsed[i][2];
       var cardBackSrc = parsed.splice(i+1, j - i - 1);
       var cardBackHtml = markdown.toHTML(['markdown', { references: references }].concat(cardBackSrc));
-      console.log(parsed, ['markdown', references].concat(cardBackSrc), cardBackHtml);
       deck.addCard(cardFront, cardBackHtml);
     }
   }
