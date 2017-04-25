@@ -12,7 +12,8 @@
   "author": "Joshua Gross <joshua.gross@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "amdefine": "^1.0.1",
     "anki-apkg-export": "^3.0.1",
-    "markdown": "^0.5.0"
+    "markdown": "git+ssh://git@github.com:JoshuaGross/markdown-js.git"
   }
 }

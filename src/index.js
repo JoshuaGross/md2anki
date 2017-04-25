@@ -23,29 +23,46 @@ var inContents = fs.readFileSync(inFile).toString();
 // Parse markdown contents
 var parsed = markdown.parse(inContents);
 
-if (parsed[0] !== 'markdown') {
-  throw new Error('Unknown document format: ' + parsed[0]);
+var i = 0;
+
+if (parsed[i] !== 'markdown') {
+  throw new Error('Unknown document format: ' + parsed[i]);
 }
 
-// Find a title
-if (parsed[1][0] !== 'header' || parsed[1][1].level !== 1) {
+i++; // i = 1
+
+// Find references
+var references = null;
+if (parsed[i] && parsed[i].references) {
+  references = parsed[i].references;
+  i++; // i = 2
+}
+
+// Find a title. i = 1 or 2
+if (parsed[i][0] !== 'header' || parsed[i][1].level !== 1) {
   throw new Error('Could not find deck title');
 }
-var title = parsed[1][2];
+var title = parsed[i][2];
 
 // Deck in-progress
 var deck = new AnkiExport(title);
 
 // Find cards
-(function () {
-  for (var i = 2; i < parsed.length; ++i) {
-    if (parsed[i][0] === 'header' && parsed[i][1].level > 1 && parsed[i+1][0] === 'para') {
+(function (i) {
+  for (; (i + 1) < parsed.length; ++i) {
+    var headerLevel = parsed[i] && parsed[i][1] && parsed[i][1].level;
+    if (parsed[i][0] === 'header' && headerLevel > 1 && parsed[i + 1][0] === 'para') {
+      // Find end of card back - EOF or next header of equal level
+      for (var j = i + 1; j < parsed.length && !(parsed[j][1].level && parsed[j][1].level <= headerLevel); j++);
+
       var cardFront = parsed[i][2];
-      var cardBack = parsed[i+1][1];
-      deck.addCard(cardFront, cardBack);
+      var cardBackSrc = parsed.splice(i+1, j - i - 1);
+      var cardBackHtml = markdown.toHTML(['markdown', { references: references }].concat(cardBackSrc));
+      console.log(parsed, ['markdown', references].concat(cardBackSrc), cardBackHtml);
+      deck.addCard(cardFront, cardBackHtml);
     }
   }
-}());
+}(i));
 
 // Write out final product
 deck.save().then(function (zip) {
