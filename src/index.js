@@ -49,16 +49,34 @@ var deck = new AnkiExport(title);
 
 // Find cards
 (function (i) {
+  var prevHeaders = {};
+
   for (; (i + 1) < parsed.length; ++i) {
     var headerLevel = parsed[i] && parsed[i][1] && parsed[i][1].level;
+
+    if (headerLevel) {
+      // filter out headers of higher levels
+      prevHeaders = Object.keys(prevHeaders).filter(function (otherLevel) {
+        return otherLevel < headerLevel;
+      }).reduce(function (a, e) {
+        a[e] = prevHeaders[e];
+        return a;
+      }, {});
+    }
+
     if (parsed[i][0] === 'header' && headerLevel > 1 && parsed[i + 1][0] === 'para') {
       // Find end of card back - EOF or next header of equal level
       for (var j = i + 1; j < parsed.length && !(parsed[j][1].level && parsed[j][1].level <= headerLevel); j++);
 
-      var cardFront = parsed[i][2];
+      var prevHeadersVals = Object.keys(prevHeaders).map(function (k) {
+        return prevHeaders[k];
+      });
+      var cardFront = markdown.toHTML(['markdown', { references: references }].concat(prevHeadersVals).concat([parsed[i]]));
       var cardBackSrc = parsed.splice(i+1, j - i - 1);
-      var cardBackHtml = markdown.toHTML(['markdown', { references: references }].concat(cardBackSrc));
-      deck.addCard(cardFront, cardBackHtml);
+      var cardBack = cardFront + '<br /><br />' + markdown.toHTML(['markdown', { references: references }].concat(cardBackSrc));
+      deck.addCard(cardFront, cardBack);
+    } else if (headerLevel) {
+      prevHeaders[headerLevel] = parsed[i];
     }
   }
 }(i));
